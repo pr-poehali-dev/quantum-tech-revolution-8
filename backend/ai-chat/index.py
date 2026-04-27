@@ -6,7 +6,7 @@ import urllib.error
 
 def handler(event: dict, context) -> dict:
     '''
-    Business: Принимает запрос пользователя и отправляет его в DeepSeek для генерации ответа.
+    Business: Принимает запрос пользователя и отправляет его в Groq для генерации ответа.
     Args: event - dict с httpMethod, body (prompt, mode); context - объект с request_id
     Returns: HTTP-ответ с полем answer (текст от нейросети)
     '''
@@ -64,16 +64,16 @@ def handler(event: dict, context) -> dict:
             })
         }
 
-    api_key = os.environ.get('DEEPSEEK_API_KEY')
+    api_key = os.environ.get('GROQ_API_KEY')
     if not api_key:
         return {
             'statusCode': 500,
             'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'DEEPSEEK_API_KEY is not configured'})
+            'body': json.dumps({'error': 'GROQ_API_KEY is not configured'})
         }
 
     payload = {
-        'model': 'deepseek-chat',
+        'model': 'llama-3.3-70b-versatile',
         'messages': [
             {'role': 'system', 'content': 'Ты — дружелюбный универсальный ассистент NeuroFree. Отвечай на русском, кратко и по делу.'},
             {'role': 'user', 'content': prompt}
@@ -83,7 +83,7 @@ def handler(event: dict, context) -> dict:
     }
 
     req = urllib.request.Request(
-        'https://api.deepseek.com/chat/completions',
+        'https://api.groq.com/openai/v1/chat/completions',
         data=json.dumps(payload).encode('utf-8'),
         headers={
             'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ def handler(event: dict, context) -> dict:
         return {
             'statusCode': 502,
             'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': f'DeepSeek error: {e.code}', 'details': err_text[:300]})
+            'body': json.dumps({'error': f'Groq error: {e.code}', 'details': err_text[:300]})
         }
     except Exception as e:
         return {
